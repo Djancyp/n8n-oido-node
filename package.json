@@ -20,7 +20,7 @@
   },
   "main": "index.js",
   "scripts": {
-    "build": "tsc && cp nodes/OidoAgent/oido.svg dist/nodes/OidoAgent/ && cp nodes/OidoTrigger/oido.svg dist/nodes/OidoTrigger/",
+    "build": "tsc && cp nodes/OidoAgent/oido.svg dist/nodes/OidoAgent/ && cp nodes/OidoTrigger/oido.svg dist/nodes/OidoTrigger/ && cp nodes/OidoDispatchTrigger/oido.svg dist/nodes/OidoDispatchTrigger/",
     "dev": "tsc --watch",
     "lint": "eslint nodes credentials",
     "prepublishOnly": "npm run build"
@@ -35,7 +35,8 @@
     ],
     "nodes": [
       "dist/nodes/OidoAgent/OidoAgent.node.js",
-      "dist/nodes/OidoTrigger/OidoTrigger.node.js"
+      "dist/nodes/OidoTrigger/OidoTrigger.node.js",
+      "dist/nodes/OidoDispatchTrigger/OidoDispatchTrigger.node.js"
     ]
   },
   "peerDependencies": {

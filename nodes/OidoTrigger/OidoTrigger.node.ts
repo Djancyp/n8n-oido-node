@@ -1,8 +1,10 @@
 import type {
   IHookFunctions,
-  IWebhookFunctions,
+  ILoadOptionsFunctions,
+  INodePropertyOptions,
   INodeType,
   INodeTypeDescription,
+  IWebhookFunctions,
   IWebhookResponseData,
 } from 'n8n-workflow';
 
@@ -13,7 +15,8 @@ export class OidoTrigger implements INodeType {
     icon: 'file:oido.svg',
     group: ['trigger'],
     version: 1,
-    subtitle: '={{$parameter["event"]}}',
+    subtitle:
+      '={{$parameter["event"] === "agent.run.finished" && $parameter["agentId"] ? $parameter["agentId"] : $parameter["event"]}}',
     description: 'Starts the workflow when an Oido Studio event fires',
     defaults: { name: 'Oido Trigger' },
     inputs: [],
@@ -41,7 +44,40 @@ export class OidoTrigger implements INodeType {
         ],
         description: 'Which Oido event should start this workflow',
       },
+      {
+        displayName: 'Agent',
+        name: 'agentId',
+        type: 'options',
+        typeOptions: { loadOptionsMethod: 'getAgents' },
+        default: '',
+        description:
+          'Only trigger for this agent. Leave empty to trigger for all agents.',
+        displayOptions: {
+          show: { event: ['agent.run.finished'] },
+        },
+      },
     ],
+  };
+
+  methods = {
+    loadOptions: {
+      async getAgents(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+        const creds = await this.getCredentials('oidoApi');
+        const agents = (await this.helpers.httpRequestWithAuthentication.call(this, 'oidoApi', {
+          method: 'GET',
+          url: '/v1/agents',
+          baseURL: creds.baseUrl as string,
+          json: true,
+        })) as Array<{ agent_id: string; agent_name: string }>;
+        return [
+          { name: 'All Agents', value: '' },
+          ...(Array.isArray(agents) ? agents : []).map((a) => ({
+            name: a.agent_name || a.agent_id,
+            value: a.agent_id,
+          })),
+        ];
+      },
+    },
   };
 
   webhookMethods = {
@@ -54,17 +90,21 @@ export class OidoTrigger implements INodeType {
       async create(this: IHookFunctions): Promise<boolean> {
         const creds = await this.getCredentials('oidoApi');
         const event = this.getNodeParameter('event') as string;
+        const agentId = this.getNodeParameter('agentId', '') as string;
         const webhookUrl = this.getNodeWebhookUrl('default') as string;
+        const body: Record<string, unknown> = { event_type: event, target_url: webhookUrl };
+        if (agentId) body.agent_id = agentId;
         const res = (await this.helpers.httpRequestWithAuthentication.call(this, 'oidoApi', {
           method: 'POST',
           url: '/v1/webhooks/subscribe',
           baseURL: creds.baseUrl as string,
-          body: { event_type: event, target_url: webhookUrl },
+          body,
           json: true,
         })) as { id?: string };
         const data = this.getWorkflowStaticData('node');
         data.subscriptionId = res?.id;
         data.event = event;
+        data.agentId = agentId || '';
         data.webhookUrl = webhookUrl;
         return true;
       },
@@ -80,11 +120,16 @@ export class OidoTrigger implements INodeType {
               json: true,
             });
           } else if (data.event && data.webhookUrl) {
+            const qs: Record<string, string> = {
+              event_type: data.event as string,
+              target_url: data.webhookUrl as string,
+            };
+            if (data.agentId) qs.agent_id = data.agentId as string;
             await this.helpers.httpRequestWithAuthentication.call(this, 'oidoApi', {
               method: 'DELETE',
               url: '/v1/webhooks/subscribe',
               baseURL: creds.baseUrl as string,
-              qs: { event_type: data.event as string, target_url: data.webhookUrl as string },
+              qs,
               json: true,
             });
           }
