@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-oido",
-  "version": "0.1.0",
+  "version": "0.8.0",
   "description": "n8n community nodes for Oido Studio — call Oido agents and trigger workflows from Oido events.",
   "keywords": [
     "n8n-community-node-package",
@@ -20,7 +20,7 @@
   },
   "main": "index.js",
   "scripts": {
-    "build": "tsc && cp nodes/OidoAgent/oido.svg dist/nodes/OidoAgent/ && cp nodes/OidoTrigger/oido.svg dist/nodes/OidoTrigger/ && cp nodes/OidoDispatchTrigger/oido.svg dist/nodes/OidoDispatchTrigger/",
+    "build": "tsc && for d in nodes/*/; do cp \"${d}oido.svg\" \"dist/$d\"; done",
     "dev": "tsc --watch",
     "lint": "eslint nodes credentials",
     "prepublishOnly": "npm run build"
@@ -34,9 +34,8 @@
       "dist/credentials/OidoApi.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/OidoAgent/OidoAgent.node.js",
-      "dist/nodes/OidoTrigger/OidoTrigger.node.js",
-      "dist/nodes/OidoDispatchTrigger/OidoDispatchTrigger.node.js"
+      "dist/nodes/Oido/Oido.node.js",
+      "dist/nodes/OidoTrigger/OidoTrigger.node.js"
     ]
   },
   "peerDependencies": {
@@ -44,6 +43,9 @@
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-n8n-nodes-base": "^1.16.3",
     "n8n-workflow": "^1.0.0",
     "typescript": "^5.4.0"
   }

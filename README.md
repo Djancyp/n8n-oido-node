@@ -1,11 +1,15 @@
 # n8n-nodes-oido
 
-n8n community nodes for [Oido Studio](https://oidostudio.com). Call Oido agents from inside your workflows, and (soon) trigger workflows from Oido events.
+n8n community nodes for [Oido Studio](https://oidostudio.com). Call Oido agents from inside your workflows, trigger workflows from Oido events, and let agents trigger your workflows.
 
 ## Nodes
 
-- **Oido Agent** — run an Oido agent with a dynamic input and use its answer downstream.
-- **Oido Trigger** — start a workflow when an Oido event fires (agent run finished, channel message, ticket created). _(coming with the events release)_
+- **Oido** — actions:
+  - *Run Agent* — run an Oido agent with a dynamic input and use its answer downstream (waits for the result, or fire-and-forget). Usable as a tool by n8n's AI Agent node.
+  - *Respond to Agent* — return a shaped response (items, custom JSON, text; status code, headers) to the agent that dispatched the workflow. Requires an Oido Trigger (Agent Dispatch) upstream.
+- **Oido Trigger** — triggers:
+  - *Oido Event* — start the workflow when an Oido event fires: agent run finished (optionally filtered to one agent) or channel message received (optionally filtered to one channel).
+  - *Agent Dispatch* — let Oido agents start this workflow with their `trigger_workflow` tool (the agent must be bound to the workflow in Studio → n8n). Choose how to respond: immediately, with the last node's output, or via a Respond to Agent node.
 
 ## Install
 

@@ -10,7 +10,7 @@ export class OidoApi implements ICredentialType {
 
   displayName = 'Oido API';
 
-  documentationUrl = 'https://oidostudio.com';
+  documentationUrl = 'https://oidostudio.com/docs';
 
   properties: INodeProperties[] = [
     {
