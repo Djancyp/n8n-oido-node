@@ -7,6 +7,15 @@ n8n community nodes for [Oido Studio](https://oidostudio.com). Call Oido agents 
 - **Oido** — actions:
   - *Run Agent* — run an Oido agent with a dynamic input and use its answer downstream (waits for the result, or fire-and-forget). Usable as a tool by n8n's AI Agent node.
   - *Respond to Agent* — return a shaped response (items, custom JSON, text; status code, headers) to the agent that dispatched the workflow. Requires an Oido Trigger (Agent Dispatch) upstream.
+  - *Embed Text* — turn text into an embedding vector with the Oido embedding model (`POST /v1/embeddings`).
+  - *Rerank Documents* — rank an array of documents by relevance to a query; returns documents with scores (`POST /v1/rerank`).
+  - *Extract Text (OCR)* — run OCR on a binary image/PDF (max 10MB) and get the text back; nothing is stored (`POST /v1/ocr/extract`).
+  - *Search Documents* — semantic search over documents previously ingested via Oido OCR (`GET /v1/ocr/search`).
+  - *Ingest Document* — upload an image/PDF into the Oido document store; async OCR + semantic indexing (`POST /v1/ocr/ingest`).
+  - *Get Document* — fetch an ingested document and its processing status; poll after Ingest Document (`GET /v1/ocr/documents/:id`).
+  - *Search Wiki* — semantic search over the org wiki, with optional rerank (`GET /v1/wiki/search`).
+  - *Get Wiki Page* — fetch a wiki page by slug (`GET /v1/wiki/:slug`). The auto-maintained slug `index` is the org's knowledge entrypoint: page counts, hub pages, synthesis links and an overview.
+  - *Ingest to Wiki* — feed text or a URL into the wiki knowledge pipeline; returns an async `job_id` (`POST /v1/wiki/ingest`).
 - **Oido Trigger** — triggers:
   - *Oido Event* — start the workflow when an Oido event fires: agent run finished (optionally filtered to one agent) or channel message received (optionally filtered to one channel).
   - *Agent Dispatch* — let Oido agents start this workflow with their `trigger_workflow` tool (the agent must be bound to the workflow in Studio → n8n). Choose how to respond: immediately, with the last node's output, or via a Respond to Agent node.
