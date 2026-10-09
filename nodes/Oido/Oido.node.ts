@@ -307,6 +307,26 @@ export class Oido implements INodeType {
 				displayOptions: { show: { operation: ['invoke'] } },
 			},
 
+			{
+				displayName: 'Agent Options',
+				name: 'invokeOptions',
+				type: 'collection',
+				placeholder: 'Add option',
+				default: {},
+				displayOptions: { show: { operation: ['invoke'] } },
+				options: [
+					{
+						displayName: 'Timeout (ms)',
+						name: 'timeout',
+						type: 'number',
+						typeOptions: { minValue: 1000, maxValue: 600000 },
+						default: 600000,
+						description:
+							'How long to wait for the agent to finish (in milliseconds). Max 600000 (10 min). Default 600000.',
+					},
+				],
+			},
+
 			// ---------------- Respond to Agent ----------------
 			{
 				displayName: 'Respond With',
@@ -662,6 +682,8 @@ async function runAgent(this: IExecuteFunctions): Promise<INodeExecutionData[][]
 		const agentId = this.getNodeParameter('agentId', i) as string;
 		const input = this.getNodeParameter('input', i) as string;
 		const wait = this.getNodeParameter('wait', i, true) as boolean;
+		const options = this.getNodeParameter('invokeOptions', i, {}) as IDataObject;
+		const timeout = (options.timeout as number) || 600_000;
 
 		if (!agentId) throw new NodeOperationError(this.getNode(), 'No agent selected', { itemIndex: i });
 
@@ -670,11 +692,9 @@ async function runAgent(this: IExecuteFunctions): Promise<INodeExecutionData[][]
 				method: 'POST',
 				url: `/v1/agents/${encodeURIComponent(agentId)}/invoke`,
 				baseURL: creds.baseUrl as string,
-				body: { input, wait },
+				body: { input, wait, timeout_seconds: Math.floor(timeout / 1000) },
 				json: true,
-				// Agent runs can take minutes; match the server's 10-min cap instead
-				// of the HTTP helper's default timeout.
-				timeout: 600_000,
+				timeout,
 			});
 			out.push({ json: response, pairedItem: { item: i } });
 		} catch (error) {
